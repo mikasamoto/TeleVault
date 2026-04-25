@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeleVault — Secure Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;400;500;600;700;800&family=Instrument+Sans:wght@400;500;600&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #030308;
+  --surf: #0a0a14;
+  --surf2: #121225;
+  --border: rgba(123, 114, 255, 0.15);
+  --border2: rgba(123, 114, 255, 0.3);
+  --acc: #7b72ff;
+  --acc2: #9b94ff;
+  --text: #ffffff;
+  --text2: #8888aa;
+  --red: #ff5c5c;
+  --green: #4ade80;
+  --r: 20px;
+  --r2: 12px;
+  --trans: 0.25s cubic-bezier(.4, 0, .2, 1);
+  --ff: 'Instrument Sans', sans-serif;
+  --ffd: 'Bricolage Grotesque', sans-serif;
+}
+[data-theme="light"] {
+  --bg: #f8f8fb;
+  --surf: #ffffff;
+  --surf2: #f0f0f8;
+  --border: rgba(123, 114, 255, 0.1);
+  --border2: rgba(123, 114, 255, 0.2);
+  --text: #050505;
+  --text2: #555566;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--ff);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: background var(--trans);
+}
+/* Cinematic Background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 10% 10%, rgba(123, 114, 255, 0.08) 0%, transparent 40%),
+              radial-gradient(circle at 90% 90%, rgba(34, 211, 238, 0.05) 0%, transparent 40%);
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(rgba(123, 114, 255, 0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.5;
+  mask-image: radial-gradient(circle at center, black, transparent 80%);
+  z-index: 0;
+}
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 440px;
+  padding: 24px;
+  animation: fadeUp 0.8s cubic-bezier(.16, 1, .3, 1);
+}
+.card {
+  background: rgba(10, 10, 20, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 48px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), 0 0 40px rgba(123, 114, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--acc2), transparent);
+  opacity: 0.5;
+}
+.logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.logo-icon {
+  width: 64px;
+  height: 64px;
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.logo-icon img { width: 42px; height: 42px; object-fit: contain; }
+.logo-text {
+  font-family: var(--ffd);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  background: linear-gradient(135deg, var(--text) 0%, var(--acc2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.title { font-family: var(--ffd); font-size: 22px; font-weight: 700; margin-bottom: 8px; text-align: center; }
+.subtitle { font-size: 14px; color: var(--text2); text-align: center; margin-bottom: 32px; }
+
+.form-group { margin-bottom: 20px; }
+label { display: block; font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-family: 'Geist Mono', monospace; }
+input {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  color: var(--text);
+  font-family: var(--ff);
+  font-size: 15px;
+  outline: none;
+  transition: all var(--trans);
+}
+input:focus {
+  border-color: var(--acc);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 4px rgba(123, 114, 255, 0.15);
+}
+.btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--r2);
+  border: none;
+  font-family: var(--ff);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--trans);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(123, 114, 255, 0.25);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(123, 114, 255, 0.4);
+}
+.btn-primary:active { transform: translateY(0); }
+.btn-ghost {
+  background: transparent;
+  color: var(--text2);
+  font-size: 13px;
+  margin-top: 16px;
+  border: 1px solid transparent;
+}
+.btn-ghost:hover { color: var(--text); background: rgba(255,255,255,0.05); border-color: var(--border); }
+
+.toggle { text-align: center; margin-top: 24px; font-size: 13px; color: var(--text2); }
+.toggle a { color: var(--acc); cursor: pointer; font-weight: 600; text-decoration: none; }
+.toggle a:hover { color: var(--acc2); text-decoration: underline; }
+
+.error {
+  background: rgba(255, 92, 92, 0.1);
+  border: 1px solid rgba(255, 92, 92, 0.2);
+  color: var(--red);
+  padding: 12px;
+  border-radius: var(--r2);
+  font-size: 13px;
+  margin-bottom: 20px;
+  display: none;
+  text-align: center;
+}
+.error.show { display: block; animation: shake 0.4s ease both; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+
+.theme-toggle {
+  position: fixed;
+  top: 32px; right: 32px;
+  width: 44px; height: 44px;
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text2);
+  transition: all var(--trans);
+}
+.theme-toggle:hover { color: var(--acc); border-color: var(--acc); transform: rotate(12deg); }
+
+.toast-area { position: fixed; bottom: 32px; right: 32px; display: flex; flex-direction: column-reverse; gap: 12px; z-index: 1000; }
+.toast {
+  background: var(--surf);
+  border: 1px solid var(--border2);
+  padding: 16px 24px;
+  border-radius: var(--r2);
+  color: var(--text);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  animation: slideIn 0.4s cubic-bezier(.16, 1, .3, 1) both;
+}
+.toast.success { border-left: 4px solid var(--green); }
+.toast.error { border-left: 4px solid var(--red); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">
+  <svg id="themeIcon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+</button>
+
+<div class="container">
+  <div class="card">
+    <div class="logo">
+      <div class="logo-icon">
+        <img src="logo.png" alt="TeleVault Logo">
+      </div>
+      <div class="logo-text">TeleVault</div>
+    </div>
+
+    <div id="loginForm">
+      <div class="title">Welcome Back</div>
+      <div class="subtitle">Enter your credentials to access storage</div>
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="loginEmail" placeholder="user@televault.io" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+        </div>
+        <div class="error" id="loginError"></div>
+        <button type="submit" class="btn btn-primary">Sign In to Dashboard</button>
+      </form>
+      <div class="toggle">Need an administrator account? <a onclick="switchToRegister()">Register Here</a></div>
+    </div>
+
+    <div id="registerForm" style="display:none">
+      <div class="title">Create Admin</div>
+      <div class="subtitle">Set up your private storage hub</div>
+      <form onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="registerEmail" placeholder="admin@televault.io" required>
+        </div>
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" id="registerPassword" placeholder="Minimum 12 characters" required minlength="12">
+        </div>
+        <div class="form-group">
+          <label>Superadmin Secret</label>
+          <input type="password" id="registerSuperAdmin" placeholder="Required for admin creation" required>
+        </div>
+        <div class="error" id="registerError"></div>
+        <button type="submit" class="btn btn-primary">Complete Registration</button>
+      </form>
+      <div class="toggle">Already have an account? <a onclick="switchToLogin()">Back to Login</a></div>
+    </div>
+
+    <div style="margin-top:40px; padding-top:24px; border-top:1px solid var(--border); text-align:center">
+      <button class="btn btn-ghost" onclick="document.getElementById('recoveryFile').click()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5"/></svg>
+        Restore Database Backup
+      </button>
+      <input type="file" id="recoveryFile" style="display:none" onchange="importDatabaseRecovery()" accept=".db">
+    </div>
+  </div>
+</div>
+
+<div class="toast-area" id="toastArea"></div>
+
+<script>
+const moonPath = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+const sunPath = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+
+function toggleTheme(){
+  const html=document.documentElement;
+  const next=html.getAttribute('data-theme')==='dark'?'light':'dark';
+  html.setAttribute('data-theme',next);
+  document.getElementById('themeIcon').innerHTML=next==='dark'?moonPath:sunPath;
+  localStorage.setItem('theme',next);
+}
+
+(function(){
+  const t=localStorage.getItem('theme')||'dark';
+  document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('themeIcon').innerHTML=t==='dark'?moonPath:sunPath;
+  focusFirstInput(document.getElementById('loginForm'));
+})();
+
+function focusFirstInput(parent){
+  if(!parent) return;
+  setTimeout(() => {
+    const input = parent.querySelector('input:not([type="hidden"]):not([disabled]):not([readonly])');
+    if(input) input.focus();
+  }, 100);
+}
+
+function switchToRegister(){
+  document.getElementById('loginForm').style.display='none';
+  document.getElementById('registerForm').style.display='block';
+  focusFirstInput(document.getElementById('registerForm'));
+}
+function switchToLogin(){
+  document.getElementById('registerForm').style.display='none';
+  document.getElementById('loginForm').style.display='block';
+  focusFirstInput(document.getElementById('loginForm'));
+}
+
+function toast(msg,type='info'){
+  const el=document.createElement('div');
+  el.className='toast '+type;
+  el.innerHTML=`<span>${msg}</span>`;
+  document.getElementById('toastArea').appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+
+async function handleLogin(e){
+  e.preventDefault();
+  const password=document.getElementById('loginPassword').value;
+  const email=document.getElementById('loginEmail').value.trim();
+  const errorEl=document.getElementById('loginError');
+  errorEl.classList.remove('show');
+  
+  try{
+    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const d=await r.json();
+    if(d.success){
+      localStorage.setItem('token',d.token);
+      localStorage.setItem('username',d.username);
+      localStorage.setItem('isAdmin',d.isAdmin?'true':'false');
+      toast('Welcome to TeleVault!','success');
+      setTimeout(()=>window.location.href='/index.html',800);
+    }else{
+      errorEl.textContent=d.error||'Invalid credentials';
+      errorEl.classList.add('show');
+    }
+  }catch(e){
+    errorEl.textContent='Service unreachable';
+    errorEl.classList.add('show');
+  }
+}
+
+async function handleRegister(e){
+  e.preventDefault();
+  const email=document.getElementById('registerEmail').value.trim();
+  const password=document.getElementById('registerPassword').value;
+  const superAdminPassword=document.getElementById('registerSuperAdmin').value;
+  const errorEl=document.getElementById('registerError');
+  errorEl.classList.remove('show');
+  
+  try{
+    const r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password,superAdminPassword})});
+    const d=await r.json();
+    if(d.success){
+      toast('Admin created successfully!','success');
+      setTimeout(()=>switchToLogin(),1500);
+    }else{
+      errorEl.textContent=d.error||'Registration failed';
+      errorEl.classList.add('show');
+    }
+  }catch(e){
+    errorEl.textContent='Connection error';
+    errorEl.classList.add('show');
+  }
+}
+
+async function importDatabaseRecovery(){
+  const fileInput=document.getElementById('recoveryFile');
+  const file=fileInput.files[0];
+  if(!file)return;
+  if(!confirm('Restore this database backup? This will overwrite all current data.')) {fileInput.value=''; return;}
+  
+  const fd=new FormData();fd.append('file',file);
+  try{
+    toast('Restoring data…','info');
+    const r=await fetch('/api/db/import-recovery',{method:'POST',body:fd});
+    const d=await r.json();
+    if(d.success){
+      toast('Success! Reloading system…','success');
+      setTimeout(()=>window.location.reload(),2000);
+    }else toast(d.error||'Restore failed','error');
+  }catch(e){toast('Error: '+e.message,'error');}
+  finally{fileInput.value='';}
+}
+</script>
+</body>
+</html>
